@@ -111,6 +111,6 @@ RF9.4: Filtri documenti scaduti o in scadenza.
 
 
 LINK PROTOTIPO
-https://sport-team-organizer.lovable.app
+[https://sport-team-organizer.lovable.app](https://lovable.dev/projects/0f70866b-f027-4f04-8498-4368c0769ac4)
 
 
