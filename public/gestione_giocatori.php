@@ -5,7 +5,7 @@ require "connessione.php";
 if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
 
 $query = "SELECT * FROM giocatori ORDER BY cognome ASC";
-$risultato = $mysql->query($query);
+$risultato = $pdo->query($query); // Usiamo $pdo->query()
 ?>
 
 <!DOCTYPE html>
@@ -169,7 +169,8 @@ $risultato = $mysql->query($query);
                 </tr>
             </thead>
             <tbody>
-                <?php while($row = $risultato->fetch_assoc()): 
+                <?php while($row = $risultato->fetch()): // Sostituito fetch_assoc() con fetch() ?>
+                <?php
                     // Logica colore visita
                     $oggi = new DateTime();
                     $scadenza = new DateTime($row['scadenza_visita']);

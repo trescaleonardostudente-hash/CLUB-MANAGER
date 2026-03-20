@@ -14,14 +14,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"] ?? "";
     $password = $_POST["password"] ?? "";
 
-    $stmt = $mysql->prepare("SELECT id, password FROM utenti WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt = $pdo->prepare("SELECT id, password FROM utenti WHERE email = ?");
+    $stmt->execute([$email]);
+    $utente = $stmt->fetch(); // In PDO fetch prende la prima riga
 
-    if ($result->num_rows === 1) {
-        $utente = $result->fetch_assoc();
-        // Verifica la password hashata (creata in registrazione.php)
+    if ($utente) {
+        // Verifica la password hashata
         if (password_verify($password, $utente["password"])) {
             $_SESSION["user_id"] = $utente["id"];
             header("Location: generatoken.php");

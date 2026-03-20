@@ -4,7 +4,7 @@ require "connessione.php";
 
 // Query per prendere tutti i giocatori che hanno una data di visita inserita
 $query = "SELECT nome, cognome, scadenza_visita, contatto_genitore FROM giocatori WHERE scadenza_visita IS NOT NULL ORDER BY scadenza_visita ASC";
-$risultato = $mysql->query($query);
+$risultato = $pdo->query($query); // Usiamo $pdo->query()
 ?>
 
 <!DOCTYPE html>
@@ -35,7 +35,7 @@ $risultato = $mysql->query($query);
         <h1>Monitoraggio Visite Mediche</h1>
 
         <?php 
-        while($row = $risultato->fetch_assoc()): 
+        while($row = $risultato->fetch()): // Sostituito fetch_assoc() con fetch()
             $oggi = new DateTime();
             $scadenza = new DateTime($row['scadenza_visita']);
             $differenza = $oggi->diff($scadenza);

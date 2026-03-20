@@ -1,9 +1,4 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
-require "connessione.php";
-
 session_start();
 require "connessione.php";
 error_reporting(E_ALL);
@@ -22,17 +17,19 @@ $a = [
 
 /* modifica */
 if (isset($_GET['id'])) {
-    $stmt = $mysql->prepare("SELECT * FROM allenamenti WHERE id = ?");
-    $stmt->bind_param("i", $_GET['id']);
-    $stmt->execute();
-    $a = $stmt->get_result()->fetch_assoc();
+    $stmt = $pdo->prepare("SELECT * FROM allenamenti WHERE id = ?");
+    $stmt->execute([$_GET['id']]);
+    $result = $stmt->fetch();
+    if ($result) {
+        $a = $result;
+    }
 }
 
 /* categorie */
-$categorie = $mysql->query("SELECT * FROM categorie ORDER BY nome");
+$categorie = $pdo->query("SELECT * FROM categorie ORDER BY nome");
 
 /* squadre */
-$squadre = $mysql->query("
+$squadre = $pdo->query("
     SELECT s.id, s.nome, c.nome AS categoria
     FROM squadre s
     JOIN categorie c ON c.id = s.categoria_id
@@ -40,7 +37,7 @@ $squadre = $mysql->query("
 ");
 
 /* campi */
-$campi = $mysql->query("SELECT * FROM campi ORDER BY nome");
+$campi = $pdo->query("SELECT * FROM campi ORDER BY nome");
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -61,14 +58,14 @@ label { font-size:0.8rem; color:#888; }
 <h2><?= $a['id'] ? 'Modifica Allenamento' : 'Nuovo Allenamento' ?></h2>
 
 <form action="salva_allenamento.php" method="POST">
-<input type="hidden" name="id" value="<?= $a['id'] ?>">
+<input type="hidden" name="id" value="<?= htmlspecialchars($a['id']) ?>">
 
 <label>Squadra</label>
 <select name="squadra_id" required>
 <option value="">-- seleziona squadra --</option>
-<?php while($s = $squadre->fetch_assoc()): ?>
+<?php while($s = $squadre->fetch()): ?>
 <option value="<?= $s['id'] ?>" <?= $a['squadra_id']==$s['id']?'selected':'' ?>>
-<?= $s['categoria'] ?> - <?= $s['nome'] ?>
+<?= htmlspecialchars($s['categoria']) ?> - <?= htmlspecialchars($s['nome']) ?>
 </option>
 <?php endwhile; ?>
 </select>
@@ -76,9 +73,9 @@ label { font-size:0.8rem; color:#888; }
 <label>Campo</label>
 <select name="campo_id" required>
 <option value="">-- seleziona campo --</option>
-<?php while($c = $campi->fetch_assoc()): ?>
+<?php while($c = $campi->fetch()): ?>
 <option value="<?= $c['id'] ?>" <?= $a['campo_id']==$c['id']?'selected':'' ?>>
-<?= $c['nome'] ?> (<?= $c['tipologia'] ?>)
+<?= htmlspecialchars($c['nome']) ?> (<?= htmlspecialchars($c['tipologia']) ?>)
 </option>
 <?php endwhile; ?>
 </select>
@@ -86,16 +83,16 @@ label { font-size:0.8rem; color:#888; }
 <div style="display:flex; gap:10px;">
 <div style="flex:1">
 <label>Data</label>
-<input type="date" name="data" value="<?= $a['data'] ?>" required>
+<input type="date" name="data" value="<?= htmlspecialchars($a['data']) ?>" required>
 </div>
 <div style="flex:1">
 <label>Ora Inizio</label>
-<input type="time" name="ora_inizio" value="<?= $a['ora_inizio'] ?>" required>
+<input type="time" name="ora_inizio" value="<?= htmlspecialchars($a['ora_inizio']) ?>" required>
 </div>
 </div>
 
 <label>Ora Fine</label>
-<input type="time" name="ora_fine" value="<?= $a['ora_fine'] ?>" required>
+<input type="time" name="ora_fine" value="<?= htmlspecialchars($a['ora_fine']) ?>" required>
 
 <label>
 <input type="checkbox" name="ricorrente" value="1" <?= $a['ricorrente']?'checked':'' ?>>

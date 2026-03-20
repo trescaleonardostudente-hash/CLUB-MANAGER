@@ -1,6 +1,6 @@
 <?php
 session_start();
-require "connessione.php"; // Assicurati che contenga $mysql
+require "connessione.php"; // Assicurati che contenga $pdo
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['auth_user'])) {
     header("Location: login.php");
@@ -14,19 +14,18 @@ $query_user = "SELECT u.nome, r.nome AS nome_ruolo, u.ruolo_id
                FROM utenti u 
                JOIN ruoli r ON u.ruolo_id = r.id 
                WHERE u.id = ?";
-$stmt = $mysql->prepare($query_user);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$user_info = $stmt->get_result()->fetch_assoc();
+$stmt = $pdo->prepare($query_user);
+$stmt->execute([$user_id]);
+$user_info = $stmt->fetch();
 
 $nome_utente = $user_info['nome'] ?? 'Utente';
 $ruolo = $user_info['nome_ruolo'] ?? 'Visualizzatore';
-$ruolo_id = $user_info['ruolo_id'];
+$ruolo_id = $user_info['ruolo_id'] ?? 3;
 
-// 2. Query Statistiche (Dati reali dal tuo DB)
-$tot_giocatori = $mysql->query("SELECT COUNT(*) as tot FROM giocatori WHERE attivo = 1")->fetch_assoc()['tot'];
-$tot_allenamenti = $mysql->query("SELECT COUNT(*) as tot FROM allenamenti WHERE data >= CURDATE()")->fetch_assoc()['tot'];
-$scadenza_doc = $mysql->query("SELECT COUNT(*) as tot FROM documenti WHERE data_scadenza < DATE_ADD(CURDATE(), INTERVAL 30 DAY)")->fetch_assoc()['tot'];
+// 2. Query Statistiche (Dati reali dal tuo DB in PDO)
+$tot_giocatori = $pdo->query("SELECT COUNT(*) as tot FROM giocatori WHERE attivo = 1")->fetch()['tot'];
+$tot_allenamenti = $pdo->query("SELECT COUNT(*) as tot FROM allenamenti WHERE data >= CURDATE()")->fetch()['tot'];
+$scadenza_doc = $pdo->query("SELECT COUNT(*) as tot FROM documenti WHERE data_scadenza < DATE_ADD(CURDATE(), INTERVAL 30 DAY)")->fetch()['tot'];
 ?>
 
 <!DOCTYPE html>
@@ -75,7 +74,7 @@ $scadenza_doc = $mysql->query("SELECT COUNT(*) as tot FROM documenti WHERE data_
     <nav class="navbar">
         <div class="brand"><i class="fas fa-futbol"></i> CLUB MANAGER</div>
         <div class="user-info">
-            <span class="role-badge"><?php echo $ruolo; ?></span>
+            <span class="role-badge"><?php echo htmlspecialchars($ruolo); ?></span>
             <span><strong><?php echo htmlspecialchars($nome_utente); ?></strong></span>
             <a href="logout.php" style="color: #f44336; text-decoration: none;"><i class="fas fa-power-off"></i></a>
         </div>
@@ -131,7 +130,7 @@ $scadenza_doc = $mysql->query("SELECT COUNT(*) as tot FROM documenti WHERE data_
                 <div class="card-body">
                     <p>Visualizza la disponibilità dei campi sportivi e le notifiche di sistema inviate dalla segreteria.</p>
                     <a href="visualizza_campi.php" class="btn">Stato Campi</a>
-                    <a href="notifiche.php" class="btn">Notifiche (<?php echo $mysql->query("SELECT COUNT(*) FROM notifiche WHERE letto=0")->fetch_assoc()['COUNT(*)']; ?>)</a>
+                    <a href="notifiche.php" class="btn">Notifiche (<?php echo $pdo->query("SELECT COUNT(*) FROM notifiche WHERE letto=0")->fetchColumn(); ?>)</a>
                 </div>
             </div>
 

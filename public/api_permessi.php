@@ -22,20 +22,20 @@ try {
         exit;
     }
 
-    // Query per i permessi basata sul tuo DB: permessi -> ruoli_permessi -> utenti
     $sql = "SELECT p.codice 
             FROM permessi p
             JOIN ruoli_permessi rp ON p.id = rp.permesso_id
             JOIN utenti u ON rp.ruolo_id = u.ruolo_id
             WHERE u.id = ?";
 
-    $stmt = $mysql->prepare($sql);
-    $stmt->bind_param("i", $payload['uid']);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$payload['uid']]);
+    $risultati = $stmt->fetchAll();
 
     $privilegi = [];
-    while ($row = $result->fetch_assoc()) { $privilegi[] = $row['codice']; }
+    foreach ($risultati as $row) { 
+        $privilegi[] = $row['codice']; 
+    }
 
     echo json_encode([
         "status" => "success",
@@ -44,5 +44,6 @@ try {
     ]);
 
 } catch (Exception $e) {
-    echo json_encode(["error" => "Token non valido"]);
+    echo json_encode(["error" => "Token non valido o errore server: " . $e->getMessage()]);
 }
+?>
