@@ -8,15 +8,15 @@ if (!isset($_SESSION["user_id"])) { header("Location: login.php"); exit; }
 $secret_key = "chiave-segreta-molto-lunga-1234567890"; 
 
 function generate_jwt($user_id, $key) {
-    $issuedAt = time();
-    $payload = [
-        "iss" => "clubmanager",
-        "iat" => $issuedAt,
-        "nbf" => $issuedAt,
-        "exp" => $issuedAt + 600, // Scadenza 10 minuti (GPO)
-        "uid" => $user_id
-    ];
-    return JWT::encode($payload, $key, 'HS256');
+        $issuedAt = time();
+            $payload = [
+                    "iss" => "clubmanager",
+                            "iat" => $issuedAt,
+                                    "nbf" => $issuedAt,
+                                            "exp" => $issuedAt + 600, // Scadenza 10 minuti (GPO)
+                                                    "uid" => $user_id
+                                                        ];
+                                                            return JWT::encode($payload, $key, 'HS256');
 }
 
 $jwt = generate_jwt($_SESSION["user_id"], $secret_key);

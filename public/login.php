@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $error = "❌ Password errata. Riprova il tiro!"; 
         }
     } else { 
-        $error = "⚠️ Account non trovato. Devi prima firmare il contratto."; 
+        $error = "⚠️ Account non trovato. Devi prima registrarti."; 
     }
 }
 ?>
