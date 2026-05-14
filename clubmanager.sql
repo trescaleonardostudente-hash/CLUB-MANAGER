@@ -1,11 +1,10 @@
-
 -- phpMyAdmin SQL Dump
 -- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Creato il: Gen 09, 2026 alle 10:21
--- Versione del server: 10.11.13-MariaDB-0ubuntu0.24.04.1
+-- Creato il: Feb 02, 2026 alle 07:15
+-- Versione del server: 10.11.14-MariaDB-0ubuntu0.24.04.1
 -- Versione PHP: 8.3.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -153,6 +152,43 @@ CREATE TABLE `notifiche` (
 -- --------------------------------------------------------
 
 --
+-- Struttura della tabella `permessi`
+--
+
+CREATE TABLE `permessi` (
+  `id` int(11) NOT NULL,
+  `codice` varchar(100) NOT NULL,
+  `descrizione` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dump dei dati per la tabella `permessi`
+--
+
+INSERT INTO `permessi` (`id`, `codice`, `descrizione`) VALUES
+(1, 'gestione_utenti', 'Gestione utenti'),
+(2, 'gestione_permessi', 'Gestione ruoli e permessi'),
+(3, 'crea_allenamento', 'Creazione allenamenti'),
+(4, 'modifica_allenamento', 'Modifica allenamenti'),
+(5, 'elimina_allenamento', 'Eliminazione allenamenti'),
+(6, 'visualizza_dati', 'Visualizzazione dati');
+
+-- --------------------------------------------------------
+
+--
+-- Struttura della tabella `refresh_tokens`
+--
+
+CREATE TABLE `refresh_tokens` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struttura della tabella `ruoli`
 --
 
@@ -169,6 +205,32 @@ INSERT INTO `ruoli` (`id`, `nome`) VALUES
 (2, 'Allenatore'),
 (1, 'Amministratore'),
 (3, 'Visualizzatore');
+
+-- --------------------------------------------------------
+
+--
+-- Struttura della tabella `ruoli_permessi`
+--
+
+CREATE TABLE `ruoli_permessi` (
+  `ruolo_id` int(11) NOT NULL,
+  `permesso_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dump dei dati per la tabella `ruoli_permessi`
+--
+
+INSERT INTO `ruoli_permessi` (`ruolo_id`, `permesso_id`) VALUES
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(2, 3),
+(2, 4),
+(2, 6),
+(3, 6);
 
 -- --------------------------------------------------------
 
@@ -220,28 +282,15 @@ CREATE TABLE `utenti` (
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+--
+-- Dump dei dati per la tabella `utenti`
+--
 
---
--- Struttura stand-in per le viste `v_tesserati_categoria`
--- (Vedi sotto per la vista effettiva)
---
-CREATE TABLE `v_tesserati_categoria` (
-`categoria` varchar(50)
-,`totale_tesserati` bigint(21)
-);
-
--- --------------------------------------------------------
-
---
--- Struttura stand-in per le viste `v_utilizzo_campi`
--- (Vedi sotto per la vista effettiva)
---
-CREATE TABLE `v_utilizzo_campi` (
-`campo` varchar(100)
-,`data` date
-,`numero_allenamenti` bigint(21)
-);
+INSERT INTO `utenti` (`id`, `nome`, `email`, `password`, `ruolo_id`, `created_at`) VALUES
+(7, 'leonardo tresca', 'trescaleonardo11@gmail.com', '$2y$10$9zE/ngJB.NB9OxaVzmdR6.zxu46SJQ32SI.D3Bf4gafVbgvGPHYlq', 2, '2026-01-29 14:34:48'),
+(8, 'honan serraao', 'admin@test.com', '$2y$10$3QeVn0ivas61v/5e.ZYNf.lWnKivXqfNbrhYCao7/riHQ3qXKvCiy', 3, '2026-01-29 15:02:21'),
+(9, 'COPILOZ', 's.tresca@alice.it', '$2y$10$SxNQJI0y6Y6.e3e.B0MD2.NvF57hPAKi557ZYxvMr3OanuW.sAlkW', 1, '2026-01-29 15:24:55'),
+(10, 'stiven kurtu', 'kurtulaj.stiven.studente@itispaleocapa.it', '$2y$10$30xmeCi39/0qrKdh2V48m.MJ96eArufYeQOxBxD6..dz7dhwYG3Nm', 2, '2026-01-30 07:08:21');
 
 --
 -- Indici per le tabelle scaricate
@@ -302,11 +351,32 @@ ALTER TABLE `notifiche`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indici per le tabelle `permessi`
+--
+ALTER TABLE `permessi`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `codice` (`codice`);
+
+--
+-- Indici per le tabelle `refresh_tokens`
+--
+ALTER TABLE `refresh_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
 -- Indici per le tabelle `ruoli`
 --
 ALTER TABLE `ruoli`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `nome` (`nome`);
+
+--
+-- Indici per le tabelle `ruoli_permessi`
+--
+ALTER TABLE `ruoli_permessi`
+  ADD PRIMARY KEY (`ruolo_id`,`permesso_id`),
+  ADD KEY `permesso_id` (`permesso_id`);
 
 --
 -- Indici per le tabelle `squadre`
@@ -390,6 +460,18 @@ ALTER TABLE `notifiche`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT per la tabella `permessi`
+--
+ALTER TABLE `permessi`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT per la tabella `refresh_tokens`
+--
+ALTER TABLE `refresh_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT per la tabella `ruoli`
 --
 ALTER TABLE `ruoli`
@@ -405,25 +487,7 @@ ALTER TABLE `squadre`
 -- AUTO_INCREMENT per la tabella `utenti`
 --
 ALTER TABLE `utenti`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
--- --------------------------------------------------------
-
---
--- Struttura per vista `v_tesserati_categoria`
---
-DROP TABLE IF EXISTS `v_tesserati_categoria`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`utente_phpmyadmin`@`localhost` SQL SECURITY DEFINER VIEW `v_tesserati_categoria`  AS SELECT `c`.`nome` AS `categoria`, count(`g`.`id`) AS `totale_tesserati` FROM (((`categorie` `c` join `squadre` `s` on(`s`.`categoria_id` = `c`.`id`)) join `squadre_giocatori` `sg` on(`sg`.`squadra_id` = `s`.`id`)) join `giocatori` `g` on(`g`.`id` = `sg`.`giocatore_id`)) GROUP BY `c`.`nome` ;
-
--- --------------------------------------------------------
-
---
--- Struttura per vista `v_utilizzo_campi`
---
-DROP TABLE IF EXISTS `v_utilizzo_campi`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`utente_phpmyadmin`@`localhost` SQL SECURITY DEFINER VIEW `v_utilizzo_campi`  AS SELECT `ca`.`nome` AS `campo`, `a`.`data` AS `data`, count(`a`.`id`) AS `numero_allenamenti` FROM (`allenamenti` `a` join `campi` `ca` on(`ca`.`id` = `a`.`campo_id`)) GROUP BY `ca`.`nome`, `a`.`data` ;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Limiti per le tabelle scaricate
@@ -447,6 +511,19 @@ ALTER TABLE `disponibilita_campi`
 --
 ALTER TABLE `documenti`
   ADD CONSTRAINT `documenti_ibfk_1` FOREIGN KEY (`giocatore_id`) REFERENCES `giocatori` (`id`) ON DELETE CASCADE;
+
+--
+-- Limiti per la tabella `refresh_tokens`
+--
+ALTER TABLE `refresh_tokens`
+  ADD CONSTRAINT `refresh_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `utenti` (`id`) ON DELETE CASCADE;
+
+--
+-- Limiti per la tabella `ruoli_permessi`
+--
+ALTER TABLE `ruoli_permessi`
+  ADD CONSTRAINT `ruoli_permessi_ibfk_1` FOREIGN KEY (`ruolo_id`) REFERENCES `ruoli` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `ruoli_permessi_ibfk_2` FOREIGN KEY (`permesso_id`) REFERENCES `permessi` (`id`) ON DELETE CASCADE;
 
 --
 -- Limiti per la tabella `squadre`

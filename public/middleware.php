@@ -23,6 +23,7 @@ function auth() {
 }
 
 function getPermessi($user_id, $conn) {
+    // $conn ora è un oggetto PDO, usiamo la sua sintassi
     $stmt = $conn->prepare("
         SELECT p.codice
         FROM permessi p
@@ -30,12 +31,10 @@ function getPermessi($user_id, $conn) {
         JOIN utenti u ON u.ruolo_id = rp.ruolo_id
         WHERE u.id = ?
     ");
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
+    $stmt->execute([$user_id]);
 
     $permessi = [];
-    $res = $stmt->get_result();
-    while ($r = $res->fetch_assoc()) {
+    while ($r = $stmt->fetch()) {
         $permessi[] = $r["codice"];
     }
     return $permessi;
