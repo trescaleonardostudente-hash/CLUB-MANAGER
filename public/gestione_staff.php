@@ -1,10 +1,9 @@
 <?php
 session_start();
 require "connessione.php";
-
 if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
 
-$query = "SELECT * FROM vista_allenatori_squadre";
+$query = "SELECT * FROM allenatori";
 $result = $mysql->query($query);
 ?>
 <!DOCTYPE html>
@@ -12,43 +11,28 @@ $result = $mysql->query($query);
 <head>
     <meta charset="UTF-8">
     <title>Staff Tecnico</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --primary: #00ff87; --bg-dark: #040805; --bg-card: rgba(12, 24, 16, 0.65); --text-main: #ffffff; --glass-border: rgba(255, 255, 255, 0.06); }
-        body { margin: 0; font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top right, #0d2e1a, var(--bg-dark) 80%); color: var(--text-main); min-height: 100vh; padding: 2rem; }
-        .container { max-width: 1200px; margin: 0 auto; background: var(--bg-card); padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; }
-        h1 { margin: 0; color: var(--primary); text-transform: uppercase; font-weight: 900; }
-        .btn-outline { padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; background: transparent; color: #fff; border: 1px solid var(--glass-border); }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--glass-border); }
-        th { color: var(--primary); text-transform: uppercase; font-size: 0.8rem; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style> /* Stessi stili */ body { background: #040805; color: white; font-family: 'Montserrat'; padding: 40px; } .container { background: rgba(12,24,16,0.8); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); } table { width: 100%; border-collapse: collapse; } th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); } th { color: #00ff87; } </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1><i class="fa-solid fa-whistle"></i> Staff Tecnico</h1>
-        <a href="dashboard.php" class="btn-outline"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
-    </div>
-    <table>
-        <thead><tr><th>Mister</th><th>Patentino</th><th>Contatti</th><th>Squadra Assegnata</th></tr></thead>
-        <tbody>
-            <?php if($result && $result->num_rows > 0): ?>
-                <?php while($a = $result->fetch_assoc()): ?>
+    <div class="container">
+        <h2 style="color:#00ff87;">STAFF TECNICO (RF3)</h2>
+        <table>
+            <thead><tr><th>Nome</th><th>Contatto Telefonico</th><th>Email</th><th>Patentino</th></tr></thead>
+            <tbody>
+                <?php if($result && $result->num_rows > 0): while($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td style="font-weight:bold;"><?= htmlspecialchars($a['nome']) ?></td>
-                    <td><?= htmlspecialchars($a['patentino'] ?? 'N/D') ?></td>
-                    <td style="font-size:0.8rem;"><?= htmlspecialchars($a['telefono']) ?><br><?= htmlspecialchars($a['email']) ?></td>
-                    <td style="color:var(--primary);"><?= htmlspecialchars($a['squadra'] ?? 'Senza Squadra') ?></td>
+                    <td><strong><?= htmlspecialchars($row['nome'] . " " . $row['cognome']) ?></strong></td>
+                    <td><?= htmlspecialchars($row['telefono'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($row['email'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($row['patentino'] ?? '-') ?></td>
                 </tr>
-                <?php endwhile; ?>
-            <?php else: ?>
-                <tr><td colspan="4" style="text-align:center;">Nessun allenatore in archivio.</td></tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+                <?php endwhile; else: ?>
+                <tr><td colspan="4">Nessun allenatore censito.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+        <br><a href="dashboard.php" style="color:#fff;">Torna alla Dashboard</a>
+    </div>
 </body>
-</html>
+</html>S

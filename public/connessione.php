@@ -1,15 +1,28 @@
 <?php
-$dsn = "mysql:host=localhost;dbname=clubmanager;charset=utf8mb4";
+// Parametri del tuo database
+$host = "localhost";
+$dbname = "clubmanager";
 $username = "utente_phpmyadmin";
 $password = "ringraziandoPENNETTA";
 
+// =========================================================
+// 1. CONNESSIONE PDO (Serve per far funzionare il login.php)
+// =========================================================
 try {
+    $dsn = "mysql:host=$host;dbname=$dbname;charset=utf8mb4";
     $pdo = new PDO($dsn, $username, $password);
-    // Imposta PDO per lanciare eccezioni in caso di errore (fondamentale per le transazioni)
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    // Facoltativo: imposta fetch mode di default ad array associativo
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    die(json_encode(["error" => "Connessione fallita: " . $e->getMessage()]));
+    die("Connessione PDO fallita: " . $e->getMessage());
+}
+
+// =========================================================
+// 2. CONNESSIONE MYSQLI (Serve per la Dashboard e il resto)
+// =========================================================
+$mysql = new mysqli($host, $username, $password, $dbname);
+
+if ($mysql->connect_error) {
+    die("Connessione MySQLi fallita: " . $mysql->connect_error);
 }
 ?>
