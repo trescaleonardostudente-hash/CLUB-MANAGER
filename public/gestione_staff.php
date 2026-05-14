@@ -4,14 +4,14 @@ require "connessione.php";
 
 if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
 
-$query = "SELECT d.id, g.nome, g.cognome, d.tipo, d.data_scadenza FROM documenti d JOIN giocatori g ON d.giocatore_id = g.id ORDER BY d.data_scadenza ASC";
+$query = "SELECT * FROM vista_allenatori_squadre";
 $result = $mysql->query($query);
 ?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Archivio Documenti</title>
+    <title>Staff Tecnico</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -29,33 +29,23 @@ $result = $mysql->query($query);
 <body>
 <div class="container">
     <div class="header">
-        <h1><i class="fa-solid fa-file-medical"></i> Archivio Documenti</h1>
+        <h1><i class="fa-solid fa-whistle"></i> Staff Tecnico</h1>
         <a href="dashboard.php" class="btn-outline"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
     </div>
     <table>
-        <thead><tr><th>Giocatore</th><th>Tipo Documento</th><th>Scadenza</th><th>Stato</th></tr></thead>
+        <thead><tr><th>Mister</th><th>Patentino</th><th>Contatti</th><th>Squadra Assegnata</th></tr></thead>
         <tbody>
             <?php if($result && $result->num_rows > 0): ?>
-                <?php 
-                $oggi = new DateTime();
-                while($d = $result->fetch_assoc()): 
-                    $scadenza = new DateTime($d['data_scadenza']);
-                    $diff = $oggi->diff($scadenza)->days;
-                    $is_scaduto = $scadenza < $oggi;
-                    
-                    $stato_color = "#00ff87"; $stato_testo = "Valido";
-                    if ($is_scaduto) { $stato_color = "#ff0055"; $stato_testo = "Scaduto!"; }
-                    elseif ($diff <= 30) { $stato_color = "#ffb800"; $stato_testo = "In Scadenza"; }
-                ?>
+                <?php while($a = $result->fetch_assoc()): ?>
                 <tr>
-                    <td style="font-weight:bold;"><?= htmlspecialchars($d['cognome'] . ' ' . $d['nome']) ?></td>
-                    <td><?= htmlspecialchars($d['tipo']) ?></td>
-                    <td><?= date('d/m/Y', strtotime($d['data_scadenza'])) ?></td>
-                    <td style="color:<?= $stato_color ?>; font-weight:bold;"><i class="fa-solid fa-circle"></i> <?= $stato_testo ?></td>
+                    <td style="font-weight:bold;"><?= htmlspecialchars($a['nome']) ?></td>
+                    <td><?= htmlspecialchars($a['patentino'] ?? 'N/D') ?></td>
+                    <td style="font-size:0.8rem;"><?= htmlspecialchars($a['telefono']) ?><br><?= htmlspecialchars($a['email']) ?></td>
+                    <td style="color:var(--primary);"><?= htmlspecialchars($a['squadra'] ?? 'Senza Squadra') ?></td>
                 </tr>
                 <?php endwhile; ?>
             <?php else: ?>
-                <tr><td colspan="4" style="text-align:center;">Nessun documento caricato.</td></tr>
+                <tr><td colspan="4" style="text-align:center;">Nessun allenatore in archivio.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>

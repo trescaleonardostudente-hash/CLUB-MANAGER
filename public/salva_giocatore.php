@@ -1,42 +1,29 @@
 <?php
-session_start();
 require "connessione.php";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id = $_POST['id'] ?? null;
+if($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nome = $_POST['nome'];
     $cognome = $_POST['cognome'];
     $anno = $_POST['anno_nascita'];
     $ruolo = $_POST['ruolo'];
-    $maglia = $_POST['numero_maglia'];
+    $numero = !empty($_POST['numero_maglia']) ? $_POST['numero_maglia'] : NULL;
     $cf = $_POST['codice_fiscale'];
-    $genitore = $_POST['contatto_genitore'];
-    $scadenza = $_POST['scadenza_visita'];
-    $piede = $_POST['piede_preferito'];
-    $attivo = isset($_POST['attivo']) ? 1 : 0;
+    $contatto = $_POST['contatto_genitore'];
+    $squadra_id = !empty($_POST['squadra_id']) ? $_POST['squadra_id'] : NULL;
 
-    try {
-        $pdo->beginTransaction(); // INIZIO TRANSAZIONE
-
-        if ($id) {
-            // MODIFICA
-            $sql = "UPDATE giocatori SET nome=?, cognome=?, anno_nascita=?, ruolo=?, numero_maglia=?, codice_fiscale=?, contatto_genitore=?, scadenza_visita=?, piede_preferito=?, attivo=? WHERE id=?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$nome, $cognome, $anno, $ruolo, $maglia, $cf, $genitore, $scadenza, $piede, $attivo, $id]);
-        } else {
-            // AGGIUNTA
-            $sql = "INSERT INTO giocatori (nome, cognome, anno_nascita, ruolo, numero_maglia, codice_fiscale, contatto_genitore, scadenza_visita, piede_preferito, attivo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$nome, $cognome, $anno, $ruolo, $maglia, $cf, $genitore, $scadenza, $piede, $attivo]);
+    $insert = $mysql->prepare("INSERT INTO giocatori (nome, cognome, anno_nascita, ruolo, numero_maglia, codice_fiscale, contatto_genitore, attivo, societa_id) VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)");
+    $insert->bind_param("ssisiss", $nome, $cognome, $anno, $ruolo, $numero, $cf, $contatto);
+    
+    if($insert->execute()) {
+        $giocatore_id = $mysql->insert_id;
+        if ($squadra_id) {
+            $link = $mysql->prepare("INSERT INTO squadre_giocatori (squadra_id, giocatore_id) VALUES (?, ?)");
+            $link->bind_param("ii", $squadra_id, $giocatore_id);
+            $link->execute();
         }
-
-        $pdo->commit(); // CONFERMA
-        header("Location: gestione_giocatori.php?msg=successo");
+        header("Location: gestione_giocatori.php");
         exit;
-        
-    } catch (Exception $e) {
-        $pdo->rollBack(); // ANNULLA IN CASO DI ERRORE
-        die("Errore durante il salvataggio: " . $e->getMessage());
+    } else {
+        echo "Errore: " . $mysql->error;
     }
 }
 ?>

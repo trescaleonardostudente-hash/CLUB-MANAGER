@@ -1,73 +1,67 @@
 <?php
 session_start();
 require "connessione.php";
+if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit; }
 
-$g = [ 'id'=>'','nome'=>'','cognome'=>'','anno_nascita'=>'','ruolo'=>'','numero_maglia'=>'','codice_fiscale'=>'','contatto_genitore'=>'','scadenza_visita'=>'','piede_preferito'=>'','attivo'=>1 ];
-
-if (isset($_GET['id'])) {
-    $stmt = $mysql->prepare("SELECT * FROM giocatori WHERE id = ?");
-    $stmt->bind_param("i", $_GET['id']);
-    $stmt->execute();
-    $g = $stmt->get_result()->fetch_assoc();
-}
+$squadre = $mysql->query("SELECT id, nome FROM squadre ORDER BY nome ASC");
 ?>
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Gestione Atleta</title>
+    <title>Nuovo Atleta - Club Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #0a0a0a; color: white; font-family: sans-serif; padding: 40px; }
-        .form-container { max-width: 600px; margin: auto; background: #1a1a1a; padding: 25px; border-radius: 15px; border: 1px solid #2e7d32; }
-        input, select { width: 100%; padding: 10px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 5px; box-sizing: border-box; }
-        .btn-save { background: #2e7d32; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; border-radius: 5px; }
-        label { font-size: 0.8rem; color: #888; }
+        :root { --primary: #00ff87; --bg-dark: #040805; --bg-card: rgba(12, 24, 16, 0.8); --text-main: #ffffff; --glass-border: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; font-family: 'Montserrat', sans-serif; background: radial-gradient(circle at top right, #0d2e1a, var(--bg-dark) 80%); color: var(--text-main); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .form-box { background: var(--bg-card); padding: 40px; border-radius: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(10px); width: 100%; max-width: 650px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: var(--primary); text-transform: uppercase; font-weight: 900; margin: 0 0 30px 0; text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        .grid-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.75rem; font-weight: 800; color: #aaa; text-transform: uppercase; margin-bottom: 8px; }
+        input, select { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 8px; color: #fff; font-family: inherit; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; background: var(--primary); color: #000; font-weight: 900; border: none; border-radius: 8px; text-transform: uppercase; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { background: #00e67a; transform: translateY(-2px); }
+        .btn-back { display: block; text-align: center; color: #aaa; text-decoration: none; margin-top: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h2><?php echo $g['id'] ? 'Modifica Atleta' : 'Nuovo Atleta'; ?></h2>
-        <form action="salva_giocatore.php" method="POST">
-            <input type="hidden" name="id" value="<?php echo $g['id']; ?>">
-            
-            <label>Nome</label>
-            <input type="text" name="nome" value="<?php echo $g['nome']; ?>" required>
-            
-            <label>Cognome</label>
-            <input type="text" name="cognome" value="<?php echo $g['cognome']; ?>" required>
-            
-            <div style="display:flex; gap:10px;">
-                <div style="flex:1"><label>Anno Nascita</label><input type="number" name="anno_nascita" value="<?php echo $g['anno_nascita']; ?>" placeholder="YYYY"></div>
-                <div style="flex:1"><label>N. Maglia</label><input type="number" name="numero_maglia" value="<?php echo $g['numero_maglia']; ?>"></div>
+<div class="form-box">
+    <h1><i class="fa-solid fa-user-plus"></i> Nuovo Atleta</h1>
+    <form action="salva_giocatore.php" method="POST">
+        <div class="grid-row">
+            <div class="form-group"><label>Nome</label><input type="text" name="nome" required></div>
+            <div class="form-group"><label>Cognome</label><input type="text" name="cognome" required></div>
+        </div>
+        <div class="grid-row">
+            <div class="form-group"><label>Anno di Nascita</label><input type="number" name="anno_nascita" min="1950" max="2026" required></div>
+            <div class="form-group"><label>Ruolo</label>
+                <select name="ruolo" required>
+                    <option value="Portiere">Portiere</option>
+                    <option value="Difensore">Difensore</option>
+                    <option value="Centrocampista">Centrocampista</option>
+                    <option value="Attaccante">Attaccante</option>
+                </select>
             </div>
-
-            <label>Codice Fiscale</label>
-            <input type="text" name="codice_fiscale" value="<?php echo $g['codice_fiscale']; ?>" maxlength="16">
-
-            <label>Ruolo</label>
-            <select name="ruolo">
-                <option value="Portiere" <?php if($g['ruolo']=='Portiere') echo 'selected'; ?>>Portiere</option>
-                <option value="Difensore" <?php if($g['ruolo']=='Difensore') echo 'selected'; ?>>Difensore</option>
-                <option value="Centrocampista" <?php if($g['ruolo']=='Centrocampista') echo 'selected'; ?>>Centrocampista</option>
-                <option value="Attaccante" <?php if($g['ruolo']=='Attaccante') echo 'selected'; ?>>Attaccante</option>
+        </div>
+        <div class="grid-row">
+            <div class="form-group"><label>Numero Maglia</label><input type="number" name="numero_maglia"></div>
+            <div class="form-group"><label>Codice Fiscale</label><input type="text" name="codice_fiscale" maxlength="16" required></div>
+        </div>
+        <div class="form-group"><label>Contatto Genitore (Telefono/Email)</label><input type="text" name="contatto_genitore"></div>
+        <div class="form-group">
+            <label>Assegna a Squadra</label>
+            <select name="squadra_id">
+                <option value="">-- Svincolato --</option>
+                <?php while($s = $squadre->fetch_assoc()): ?>
+                    <option value="<?= $s['id'] ?>"><?= htmlspecialchars($s['nome']) ?></option>
+                <?php endwhile; ?>
             </select>
-
-            <label>Scadenza Visita Medica</label>
-            <input type="date" name="scadenza_visita" value="<?php echo $g['scadenza_visita']; ?>">
-
-            <label>Contatto Genitore (Telefono/Email)</label>
-            <input type="text" name="contatto_genitore" value="<?php echo $g['contatto_genitore']; ?>">
-
-            <label>Piede Preferito</label>
-            <select name="piede_preferito">
-                <option value="Destro" <?php echo ($g['piede_preferito']=='Destro')?'selected':''; ?>>Destro</option>
-                <option value="Sinistro" <?php echo ($g['piede_preferito']=='Sinistro')?'selected':''; ?>>Sinistro</option>
-                <option value="Ambidestro" <?php echo ($g['piede_preferito']=='Ambidestro')?'selected':''; ?>>Ambidestro</option>
-            </select>
-
-            <button type="submit" class="btn-save">SALVA ATLETA</button>
-        </form>
-    </div>
+        </div>
+        <button type="submit" class="btn">Registra Giocatore</button>
+        <a href="gestione_giocatori.php" class="btn-back">Torna Indietro</a>
+    </form>
+</div>
 </body>
 </html>
